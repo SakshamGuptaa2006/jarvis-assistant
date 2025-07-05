@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c1445 0%, #1e3c72 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            max-height: 400px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .message.user {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.jarvis {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .message.jarvis .sender {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .url-links {
+            margin-top: 10px;
+        }
+
+        .url-links a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-right: 10px;
+            padding: 5px 10px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 5px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .url-links a:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-field::placeholder {
+            color: #a0a0a0;
+        }
+
+        .input-field:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.listening {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #44ff44;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .listening-animation {
+            animation: pulse 1s infinite;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JARVIS</h1>
+            <p>Your Intelligent AI Assistant</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message jarvis">
+                    <div class="sender">JARVIS</div>
+                    <div>Hello! I'm JARVIS with Gemini. What can I help you with today?</div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <input type="text" class="input-field" id="messageInput" placeholder="Type your message here..." />
+                <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" id="voiceBtn" onclick="startVoiceRecognition()">🎤 Voice Input</button>
+                <button class="btn btn-secondary" onclick="clearChat()">🗑️ Clear Chat</button>
+                <button class="btn btn-secondary" onclick="toggleSpeech()">🔊 Toggle Speech</button>
+            </div>
+
+            <div class="status" id="statusMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let speechEnabled = true;
+        let isListening = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        function addMessage(content, isUser = false, urls = []) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'jarvis'}`;
+            
+            let messageContent = '';
+            if (!isUser) {
+                messageContent += '<div class="sender">JARVIS</div>';
+            }
+            messageContent += `<div>${content}</div>`;
+            
+            if (urls && urls.length > 0) {
+                messageContent += '<div class="url-links">';
+                urls.forEach(url => {
+                    messageContent += `<a href="${url}" target="_blank" rel="noopener noreferrer">🔗 ${url}</a>`;
+                });
+                messageContent += '</div>';
+            }
+            
+            messageDiv.innerHTML = messageContent;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            try {
+                showStatus('JARVIS is thinking...', 'listening');
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showStatus(data.error, 'error');
+                    return;
+                }
+                
+                // Add JARVIS response to chat
+                addMessage(data.response, false, data.urls);
+                
+                if (data.opened_url) {
+                    showStatus(`Opened link: ${data.opened_url}`, 'success');
+                }
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function startVoiceRecognition() {
+            if (isListening) return;
+            
+            const voiceBtn = document.getElementById('voiceBtn');
+            isListening = true;
+            
+            voiceBtn.classList.add('listening-animation');
+            voiceBtn.textContent = '🎤 Listening...';
+            voiceBtn.disabled = true;
+            
+            showStatus('Listening for your voice...', 'listening');
+            
+            try {
+                const response = await fetch('/speech-to-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showStatus(data.error, 'error');
+                } else {
+                    document.getElementById('messageInput').value = data.text;
+                    showStatus('Voice recognized successfully!', 'success');
+                    // Automatically send the message
+                    setTimeout(() => sendMessage(), 500);
+                }
+                
+            } catch (error) {
+                showStatus(`Voice recognition error: ${error.message}`, 'error');
+            } finally {
+                voiceBtn.classList.remove('listening-animation');
+                voiceBtn.textContent = '🎤 Voice Input';
+                voiceBtn.disabled = false;
+                isListening = false;
+            }
+        }
+
+        function clearChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message jarvis">
+                    <div class="sender">JARVIS</div>
+                    <div>Chat cleared. How can I help you?</div>
+                </div>
+            `;
+        }
+
+        function toggleSpeech() {
+            speechEnabled = !speechEnabled;
+            const status = speechEnabled ? 'enabled' : 'disabled';
+            showStatus(`Speech ${status}`, 'success');
+        }
+
+        // Auto-focus on input field
+        document.getElementById('messageInput').focus();
+    </script>
+</body>
+</html>
