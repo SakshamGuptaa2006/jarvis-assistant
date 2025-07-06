@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import speech_recognition as sr
-import pyttsx3
 import google.generativeai as genai
-import threading
 import re
 import webbrowser
 from urllib.parse import urlparse
@@ -10,19 +8,9 @@ from urllib.parse import urlparse
 app = Flask(__name__)
 
 # Gemini Setup
-GEMINI_API_KEY = "AIzaSyDNZ0wUXT2Yk5j3ox2XtuWObV5EYVdSve0"
+GEMINI_API_KEY = "AIzaSyDinNdVUUZNGqNaWITNwIE7UhK4VbBgOE0"
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
-
-# Text-to-Speech
-engine = pyttsx3.init()
-engine.setProperty("rate", 190)
-engine.setProperty("volume", 1.0)
-
-def speak(text):
-    """Text-to-speech function"""
-    engine.say(text)
-    engine.runAndWait()
 
 def extract_urls(text):
     """Extract URLs from text"""
@@ -92,9 +80,6 @@ def chat():
     urls = extract_urls(response)
     valid_urls = [url for url in urls if is_valid_url(url)]
     
-    # Speak the response in a separate thread
-    threading.Thread(target=speak, args=(response,), daemon=True).start()
-    
     # Auto-open first valid URL if found
     opened_url = None
     if valid_urls:
@@ -130,17 +115,5 @@ def speech_to_text():
     except Exception as e:
         return jsonify({'error': f'Error: {e}'}), 500
 
-@app.route('/speak', methods=['POST'])
-def speak_text():
-    """Speak given text"""
-    data = request.json
-    text = data.get('text', '')
-    
-    if text:
-        threading.Thread(target=speak, args=(text,), daemon=True).start()
-        return jsonify({'success': True})
-    
-    return jsonify({'error': 'No text provided'}), 400
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
